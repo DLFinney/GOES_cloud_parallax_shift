@@ -1,33 +1,41 @@
+"""
+GOES Cloud Parallax Correction Script
+
+Written by Declan Finney
+Designed for use on JASMIN computing facility, for which some packages would need to be installed in a virtual environment.
+Published Jun 2023
+
+DESCRIPTION:
+This script calculates parallax-adjusted lat and lons of points in the GOES image for cloud properties
+such as cloud optical depth. Parallax adjustment is needed if lat lon precision on the scale of the cloud height is important.
+i.e. you want to know the cloud position within a few km, but the cloud is over 10km high.
+The approach taken uses the cloud top height field from GOES (which is very coarse, but better than nothing).
+It then adds that to the minor and major axes radii of earth in the function to compute lat-lons.
+This means that an array of major and minor axis radii are passed through the function.
+The output array size is 2D, as it is if constants are used, but a different surface height from the earth centre
+has been assumed for each point, instead of the smoothly varying height of mean sea level.
+
+WARNING / REQUEST:
+An observed cloud-top height based adjustment for parallax shift is not something that has been found from other sources,
+which is why it's being shared. However, there may be errors, despite best efforts. Many functions, e.g. for regridding, are not
+set up for time varying lat and lons, and can be a bit awkward with curvilinear coordinates. Workarounds have been implemented.
+Please report if you think there are errors.
+
+OUTPUT:
+As well as resaving the read in files with updated lat and lons, a file with the data regridded to a regular latlon grid
+is also saved.
+
+USAGE:
+python parallax_latlons_goes_cloud.py
+
+EXAMPLE:
+Example cloud optical depth and height files are included with this script on github. Those files
+were produced using the provided download_goes_subregion_regrid.py script.
+"""
+
 ## Written by Declan Finney
 ## Designed for use on JASMIN computing facility, for which some packages would need to be installed in a virtual environment.
 ## Published Jun 2023
-
-## DESCRIPTION
-## This script was developed to calculate parallax-adjusted lat and lons of points in the GOES image for cloud properties
-## such as cloud optical depth. Parallax adjustment is needed if lat lon precision on the scale of the cloud height is important.
-## i.e. you want to know the clou dposition with a few km, but the cloud is over 10km high.
-## The approach I have taken uses the cloud top height field from GOES (which is very coarse, but better than nothing).
-## It then adds that to the minor and major axes radii of earth in the function to compute lat-lons.
-## This means that an array of major and minor axe radii are passed through the function.
-## The output array size is 2D, as it is if constants are used, but a different surface height from the earth centre
-## has been assumed for each point, instead of the smoothly varying height of mean sea level.
-
-## WARNING / REQUEST
-## An observed clout-top height based adjustment for parallax shift is not something I've managed to find from someone else,
-## which is why I'm sharing. However, there may be errors, despite my best efforts. Many functions, e.g. for regridding, are not
-## set up for time varying lat and lons, and can be a bit awkward with curvilinear coordinates. I've had to work round this.
-## Please let me know if you think there are errors.
-
-## OUTPUT
-## as well as resaving the read in files with updated lat and lons, a file with the dta regridded to a regular latlon grid
-## is also saved.
-
-## SYNTAX
-## I use "< >" to mark paths etc that the user will need to set to their preference.
-
-## EXAMPLE
-## Example cloud optical depth and height files are included with this script on github. Those files
-## were produced using the provided download_goes_subregion_regrid.py script.
 
 
 import numpy as np
@@ -40,6 +48,20 @@ import pandas as pd
 from goes2go import GOES
 import os
 from datetime import datetime, timedelta
+
+# Check for required dependencies
+try:
+    from goes2go import GOES
+except ImportError:
+    print("Error: goes2go package not found. Please install with: pip install goes2go")
+    sys.exit(1)
+
+try:
+    import xesmf as xe
+except ImportError:
+    print("Error: xesmf package not found. Please install with: pip install xesmf")
+    print("Note: xesmf may require additional system libraries (ESMF)")
+    sys.exit(1)
 
 def goes_lonlat_parallax_corrected(goesdataset, heights_ASL):
     # heights_ASL will need to be same grid as goesdataset

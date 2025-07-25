@@ -1,0 +1,17 @@
+# Core scientific computing
+numpy>=1.20.0
+xarray>=0.19.0
+pandas>=1.3.0
+
+# Visualization
+matplotlib>=3.5.0
+
+# GOES satellite data access
+goes2go>=2022.1.0
+
+# Regridding
+xesmf>=0.6.0
+
+# Note: Some dependencies may require additional system libraries
+# For xesmf, you may need to install ESMF separately:
+# conda install -c conda-forge esmf
