@@ -47,7 +47,46 @@ Errors are largest for higher clouds towards the edge of the satellite image. Si
 
 ## Alternative Solutions
 
-**SatPy**: The [SatPy library](https://satpy.readthedocs.io/en/stable/api/satpy.modifiers.parallax.html) also provides parallax correction capabilities. See [Issue #1](https://github.com/DLFinney/GOES_cloud_parallax_shift/issues/1) for discussion on comparing approaches.
+**SatPy**: The [SatPy library](https://satpy.readthedocs.io/en/stable/api/satpy.modifiers.parallax.html) also provides parallax correction capabilities. 
+
+### Comparison with SatPy
+
+As suggested in [Issue #1](https://github.com/DLFinney/GOES_cloud_parallax_shift/issues/1), it would be interesting to compare the results of this method with SatPy's parallax correction approach. Key differences:
+
+- **This implementation**: Uses GOES cloud-top height product for pixel-by-pixel height adjustment
+- **SatPy**: Provides more general parallax correction methods
+
+**For users considering which approach to use:**
+- SatPy offers a more established, well-tested parallax correction framework
+- This implementation provides a specific approach for cloud-height-based corrections using GOES data
+- Both methods address the same fundamental parallax issue but with different approaches
+
+We encourage users to try both methods and compare results for their specific use case.
+
+## Technical Details
+
+### Method Overview
+
+This implementation addresses parallax shift through:
+
+1. **Height-based correction**: Uses GOES cloud-top height product to estimate the height of each pixel
+2. **Earth geometry**: Adjusts the major and minor axis radii calculations for each pixel based on cloud height
+3. **Adaptive approach**: Individually corrects each pixel in each timestep rather than using a uniform height assumption
+
+### Algorithm Steps
+
+1. Download GOES cloud products (optical depth, cloud-top height, etc.)
+2. For each pixel, retrieve the cloud-top height from GOES Level 2 products
+3. Adjust the Earth radius parameters used in lat/lon calculations by adding cloud height
+4. Recalculate geographic coordinates using the height-adjusted Earth geometry
+5. Regrid the corrected data to a regular lat/lon grid
+
+### Limitations and Considerations
+
+- Cloud-top height from GOES is relatively coarse resolution
+- Method assumes cloud-top height represents the effective parallax height
+- Performance considerations for large datasets
+- Some regridding functions may not handle time-varying coordinates optimally
 
 ## Scripts
 
