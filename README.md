@@ -17,6 +17,10 @@ __Other python code that may be suitable for the task__
 SatPy https://satpy.readthedocs.io/en/stable/api/satpy.modifiers.parallax.html
 
 __Other python code that may be suitable for the task__
+
 This methodology has been developed and used as part of the DCMEX project.
+
 Finney et al. (2025) Microphysical fingerprints in anvil cloud albedo. ACP. https://doi.org/10.5194/egusphere-2025-1227 
+
 Finney et al. (2024) Deep Convective Microphysics Experiment (DCMEX) coordinated aircraft and ground observations: microphysics, aerosol, and dynamics during cumulonimbus development. ESSD. https://doi.org/10.5194/essd-16-2141-2024
+
