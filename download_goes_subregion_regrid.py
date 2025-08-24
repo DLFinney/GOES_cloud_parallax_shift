@@ -1,21 +1,36 @@
+"""
+GOES Satellite Data Download and Regridding Script
+
+Written by Declan Finney
+Designed for use on JASMIN computing facility, for which some packages would need to be installed in a virtual environment.
+Published Jun 2023
+
+DESCRIPTION:
+This script downloads a subregion relevant for the DCMEX campaign for all of July-August 2022
+when the campaign occurred. It can be used to download a variety of GOES products, but doesn't work with
+all those available through goes2go. See some products below and any notes regarding them not working.
+The script has not been developed explicitly for use by others so may not generalize well.
+However, it is shared as an example code which may make it easier to code up similar tasks.
+It also provides the base script for producing the netcdf that is then used with the parallax correction code.
+
+IMPORTANT:
+Lat/lons calculated in this script assume the image is of mean sea level height. There is NO parallax adjustment.
+See parallax_latlons_goes_cloud.py for a way to make that adjustment.
+
+USAGE:
+python download_goes_subregion_regrid.py [product] [month] [channel]
+
+Examples:
+- python download_goes_subregion_regrid.py
+- python download_goes_subregion_regrid.py ABI-L2-ACHAC 7 2
+
+SYNTAX NOTES:
+Comments use "< >" to mark paths etc that the user will need to set to their preference.
+"""
+
 ## Written by Declan Finney
 ## Designed for use on JASMIN computing facility, for which some packages would need to be installed in a virtual environment.
 ## Published Jun 2023
-
-## DESCRIPTION
-## This script was developed to download a subregion relevant for the DCMEX campaign for all of july-august 2022
-## when the campaign occurred. It can be used to download a variety of GOES products, but doesn't work with
-## all those available through goes2go. See some products below and any notes regarding them not working.
-## The script has not been developed explicitly for use by others so may not generalise well.
-## However, I share it as an example code which may make it easier to code up their own tasks.
-## It also provides a the base script for producing the netcdf that I then apply the parallax correation code to.
-
-## IMPORTANT
-## latlons calculated in this script assume the image is of mean sea level height. There is NO parallax adjustment.
-## see parallax_latlons_goes_cloud.py for a way to make that adjustment.
-
-## SYNTAX
-## I use "< >" to mark paths etc that the user will need to set to their preference.
 
 ## some interesting products. (there are more) https://github.com/blaylockbk/goes2go/blob/main/goes2go/product_table.txt
 #ABI-L1b-RadC,   Advanced Baseline Imager Level 1b CONUS
@@ -41,6 +56,20 @@ import xarray as xr
 import os
 import shutil
 import xesmf as xe
+
+# Check for required dependencies
+try:
+    from goes2go import GOES
+except ImportError:
+    print("Error: goes2go package not found. Please install with: pip install goes2go")
+    sys.exit(1)
+
+try:
+    import xesmf as xe
+except ImportError:
+    print("Error: xesmf package not found. Please install with: pip install xesmf")
+    print("Note: xesmf may require additional system libraries (ESMF)")
+    sys.exit(1)
 
 ## function to return a string with 0 preceeding number, if number <10
 ## This is not necessary. e.g. Can replace with str(<x>).zfill(2) for a 2 digit number for example.
